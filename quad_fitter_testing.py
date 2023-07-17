@@ -68,6 +68,7 @@ def quadrangulate(l):
 	
 	time = times[0]
 	if(times[0] < 0): time = times[1]
+	elif(times[0] > 10): time = times[1]
 	
 	rhs = M
 	lhs = [ [K[0]+c*c*time*N[0]],
@@ -81,40 +82,46 @@ def quadrangulate(l):
 	return solution
 
 def getBestFit():
-	
+
+	average_position = [0,0,0]
+	successes = 0
+
 	for ev in range(t.GetEntries()):
-		tests = 1000.0
-		sucesses = 0
-		average_position = [0,0,0]
-		for test in range(int(tests)):
-			t.GetEntry(ev)
-			m.GetEntry(ev)
+		tests = 10.0
 
-			pmtids = list(t.hitPMTID)
-			pmttimes = list(t.hitPMTTime)
-			ids = [] 
-			times = []
-
-			for i in range(len(pmttimes)):
-				if(pmttimes[i] < 7.0):
-					times.append(pmttimes[i])
-					ids.append(pmtids[i])
+		t.GetEntry(ev)
+		m.GetEntry(ev)
+		pmtids = list(t.hitPMTID)
+		pmttimes = list(t.hitPMTTime)
+		ids = [] 
+		times = []
 		
-			PMTHits = choosePMTHits(len(ids))
-			PMTLocations = []
-
-			for hit in PMTHits:
-				PMTLocations.append([list(m.pmtX)[ids[hit]], list(m.pmtY)[ids[hit]], list(m.pmtZ)[ids[hit]], times[hit]])
+		for i in range(len(pmttimes)):
+			if(pmttimes[i] < 7.0):
+				times.append(pmttimes[i])
+				ids.append(pmtids[i])
 		
-			eventPosition = quadrangulate(PMTLocations)
-			if(eventPosition[0] != [10000]):
-				average_position[0]+=eventPosition[0]
-				average_position[1]+=eventPosition[1]
-				average_position[2]+=eventPosition[2]
-				sucesses+=1		
+		if(len(ids) >= 4):
 
-		average_position = [x / tests for x in average_position]
-		print("AVERAGE LOCATION: " + str(average_position))
+			for test in range(int(tests)):
+				
+				PMTHits = choosePMTHits(len(ids))
+				PMTLocations = []
+
+				for hit in PMTHits:
+					PMTLocations.append([list(m.pmtX)[ids[hit]], list(m.pmtY)[ids[hit]], list(m.pmtZ)[ids[hit]], times[hit]])
+		
+				eventPosition = quadrangulate(PMTLocations)
+				if(eventPosition[0] != [10000]):
+					average_position[0]+=eventPosition[0]
+					average_position[1]+=eventPosition[1]
+					average_position[2]+=eventPosition[2]
+					successes+=1		
+
+	average_position = [x / (tests*t.GetEntries()) for x in average_position]
+	average_position[0]-=500.0
+
+	print("AVERAGE LOCATION: " + str(average_position))
 		
 		
 getBestFit()
