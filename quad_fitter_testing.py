@@ -36,11 +36,11 @@ def choosePMTHits(nhit):
 
 def multiply(m1, m2):
 	return [ m1[0][0]*m2[0]+m1[0][1]*m2[1]+m1[0][2]*m2[2],
- 		 m1[1][0]*m2[1]+m1[1][1]*m2[1]+m1[1][2]*m2[2], 
-		 m1[2][0]*m2[2]+m1[2][1]*m2[1]+m1[2][2]*m2[2] ]
+ 		 m1[1][0]*m2[0]+m1[1][1]*m2[1]+m1[1][2]*m2[2], 
+		 m1[2][0]*m2[0]+m1[2][1]*m2[1]+m1[2][2]*m2[2] ]
 
 def quadrangulate(l):
-	
+
 	M = [ [l[1][0]-l[0][0], l[1][1]-l[0][1], l[1][2]-l[0][2]],
  	      [l[2][0]-l[0][0], l[2][1]-l[0][1], l[2][2]-l[0][2]],
 	      [l[3][0]-l[0][0], l[3][1]-l[0][1], l[3][2]-l[0][2]] ]
@@ -52,9 +52,12 @@ def quadrangulate(l):
 	K = [ (dot(l[1], l[1])-dot(l[0], l[0]))/2,
 	      (dot(l[2], l[2])-dot(l[0], l[0]))/2,
 	      (dot(l[3], l[3])-dot(l[0], l[0]))/2 ]
-	
+
+	if(numpy.linalg.det(numpy.array(M)) == 0): return [10000,0,0]
+
 	G = multiply(invert_matrix(M), K)
-	H = multiply(invert_matrix(M), K)
+	
+	H = multiply(invert_matrix(M), N)
 	I = subtract([l[0][0],l[0][1],l[0][2]], G)
 
 	c1 = (dot(H,H)-1)*c*c
@@ -65,7 +68,7 @@ def quadrangulate(l):
 	
 	time = times[0]
 	if(times[0] < 0): time = times[1]
-
+	
 	rhs = M
 	lhs = [ [K[0]+c*c*time*N[0]],
 	        [K[1]+c*c*time*N[1]],
@@ -77,30 +80,39 @@ def quadrangulate(l):
 def getBestFit():
 	
 	for ev in range(t.GetEntries()):
-		t.GetEntry(ev)
-		m.GetEntry(ev)
+		tests = 100
+		sucesses = 0
+		average_position = [0,0,0]
+		for test in range(tests):
+			t.GetEntry(ev)
+			m.GetEntry(ev)
 
-		pmtids = list(t.hitPMTID)
-		pmttimes = list(t.hitPMTTime)
-		ids = [] 
-		times = []
+			pmtids = list(t.hitPMTID)
+			pmttimes = list(t.hitPMTTime)
+			ids = [] 
+			times = []
 
-		for i in range(len(pmttimes)):
-			if(pmttimes[i] < 0.0):
-				times.append(pmttimes[i])
-				ids.append(pmtids[i])
+			for i in range(len(pmttimes)):
+				if(pmttimes[i] < 7.0):
+					times.append(pmttimes[i])
+					ids.append(pmtids[i])
 		
-		PMTHits = choosePMTHits(len(ids))
-		PMTLocations = []
+			PMTHits = choosePMTHits(len(ids))
+			PMTLocations = []
 
-		for hit in PMTHits:
-			PMTLocations.append([list(m.pmtX)[ids[hit]], list(m.pmtY)[ids[hit]], list(m.pmtZ)[ids[hit]], times[hit]])
+			for hit in PMTHits:
+				PMTLocations.append([list(m.pmtX)[ids[hit]], list(m.pmtY)[ids[hit]], list(m.pmtZ)[ids[hit]], times[hit]])
 		
-		eventPosition = quadrangulate(PMTLocations)
+			eventPosition = quadrangulate(PMTLocations)
+			if(eventPosition[0] != [10000]):
+				average_position[0]+=eventPosition[0]
+				average_position[1]+=eventPosition[1]
+				average_position[2]+=eventPosition[2]
+				sucesses+=1		
+
+		average_position = [x / tests for x in average_position]
+		print("AVERAGE LOCATION: " + str(average_position))
 		
-		print(eventPosition)
-		
-			
 		
 getBestFit()
 
