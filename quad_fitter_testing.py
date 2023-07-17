@@ -75,15 +75,18 @@ def quadrangulate(l):
 		[K[2]+c*c*time*N[2]] ]
 
 	solution = numpy.linalg.solve(rhs, lhs)
+
+	if(solution[0]>1000.0 or solution[1]>1000.0 or solution[2]>1000.0): return [10000, 0, 0]	
+
 	return solution
 
 def getBestFit():
 	
 	for ev in range(t.GetEntries()):
-		tests = 100
+		tests = 1000.0
 		sucesses = 0
 		average_position = [0,0,0]
-		for test in range(tests):
+		for test in range(int(tests)):
 			t.GetEntry(ev)
 			m.GetEntry(ev)
 
