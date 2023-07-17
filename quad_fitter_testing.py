@@ -21,7 +21,7 @@ def subtract(v1, v2):
 # function to dot product two 3-vectors
 def dot(v1, v2):
 	total = 0
-	for i in len(v1):
+	for i in range(len(v1)):
 		total += v1[i]*v2[i]
 	return total
 
@@ -35,9 +35,9 @@ def choosePMTHits(nhit):
 	return PMTHits
 
 def multiply(m1, m2):
-	return [ [m1[0][0]*m2[0]+m1[0][1]*m2[1]+m1[0][2]*m2[2]],
- 		 [m1[1][0]*m2[1]+m1[1][1]*m2[1]+m1[1][2]*m2[2]], 
-		 [m1[2][0]*m2[2]+m1[2][1]*m2[1]+m1[2][2]*m2[2]] ]
+	return [ m1[0][0]*m2[0]+m1[0][1]*m2[1]+m1[0][2]*m2[2],
+ 		 m1[1][0]*m2[1]+m1[1][1]*m2[1]+m1[1][2]*m2[2], 
+		 m1[2][0]*m2[2]+m1[2][1]*m2[1]+m1[2][2]*m2[2] ]
 
 def quadrangulate(l):
 	
@@ -45,23 +45,23 @@ def quadrangulate(l):
  	      [l[2][0]-l[0][0], l[2][1]-l[0][1], l[2][2]-l[0][2]],
 	      [l[3][0]-l[0][0], l[3][1]-l[0][1], l[3][2]-l[0][2]] ]
 
-	N = [ [l[1][3]-l[0][3]],
-	      [l[2][3]-l[0][3]],
-	      [l[3][3]-l[0][3]] ]
+	N = [ l[1][3]-l[0][3],
+	      l[2][3]-l[0][3],
+	      l[3][3]-l[0][3] ]
 
-	K = [ [(dot(l[1], l[1])-dot(l[0], l[0]))/2],
-	      [(dot(l[2], l[2])-dot(l[0], l[0]))/2],
-	      [(dot(l[3], l[3])-dot(l[0], l[0]))/2] ]
-
+	K = [ (dot(l[1], l[1])-dot(l[0], l[0]))/2,
+	      (dot(l[2], l[2])-dot(l[0], l[0]))/2,
+	      (dot(l[3], l[3])-dot(l[0], l[0]))/2 ]
+	
 	G = multiply(invert_matrix(M), K)
 	H = multiply(invert_matrix(M), K)
 	I = subtract([l[0][0],l[0][1],l[0][2]], G)
 
-	c1 = (dot_product(H,H)-1)*c*c
-	c2 = 2*c*c*(dot_product(I, H)-l[0][3])
-	c3 = dot_product(I, I) - c*c*l[0][3]*l[0][3]
+	c1 = (dot(H,H)-1)*c*c
+	c2 = 2*c*c*(dot(I, H)-l[0][3])
+	c3 = dot(I, I) - c*c*l[0][3]*l[0][3]
 
-	times = numpy.roots(c1, c2, c3)
+	times = numpy.roots([c1, c2, c3])
 	
 	time = times[0]
 	if(times[0] < 0): time = times[1]
@@ -96,7 +96,6 @@ def getBestFit():
 		for hit in PMTHits:
 			PMTLocations.append([list(m.pmtX)[ids[hit]], list(m.pmtY)[ids[hit]], list(m.pmtZ)[ids[hit]], times[hit]])
 		
-		print("HI: " + str(PMTLocations))
 		eventPosition = quadrangulate(PMTLocations)
 		
 		print(eventPosition)
