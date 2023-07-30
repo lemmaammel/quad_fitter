@@ -8,8 +8,8 @@ f = ROOT.TFile.Open(filename)
 t = f.Get("output")
 m = f.Get("meta")
 
-# speed of light in water in cm/ns
-c = 2.5
+# speed of light in water in mm/ns
+c = 250.0
 
 #function to subtract two vectors
 def subtract(v1, v2):
@@ -77,6 +77,8 @@ def quadrangulate(l):
 	if(times[0] < 0): time = times[1]
 	elif(times[0] > 10): time = times[1]
 	
+	if(type(time) != float): return [10000,0,0]	
+	
 	rhs = M
 	lhs = [ [K[0]+c*c*time*N[0]],
 	        [K[1]+c*c*time*N[1]],
@@ -127,7 +129,7 @@ def getBestFit():
 		
 				eventPosition = quadrangulate(PMTLocations)
 				# add the reconstructed positions to the tallies
-				if(eventPosition[0] != [10000]):
+				if(eventPosition[0] != 10000):
 					average_position[0]+=eventPosition[0]
 					average_position[1]+=eventPosition[1]
 					average_position[2]+=eventPosition[2]
