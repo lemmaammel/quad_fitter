@@ -77,7 +77,7 @@ def quadrangulate(l):
 	if(times[0] < 0): time = times[1]
 	elif(times[0] > 10): time = times[1]
 	
-	if(type(time) != float): return [10000,0,0]	
+	if(type(time) != numpy.float64): return [10000,0,0]	
 	
 	rhs = M
 	lhs = [ [K[0]+c*c*time*N[0]],
